@@ -61,27 +61,35 @@ def index():
     return render_template('index.html', logged_in=False)
 
 
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET','POST'])
 def register():
-    email = request.form['email']
-    haslo = request.form['haslo']
+    if request.method == 'POST':
+        email = request.form['email']
+        haslo = request.form['haslo']
 
-    result = neo4j_service.create_user(email, haslo)
-    if result:
-        return result
+        result = neo4j_service.create_user(email, haslo)
+        if result:
+            return result
 
-    return redirect(url_for('login'))
-
-@app.route('/login', methods=['POST'])
-def login():
-    email = request.form['email']
-    haslo = request.form['haslo']
-
-    if neo4j_service.check_user(email, haslo):
-        session['logged_in'] = True
-        return redirect(url_for('index'))
+        return redirect(url_for('login'))
     else:
-        return "Niepoprawny login lub hasło"
+        return redirect(url_for('index'))
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form['email']
+        haslo = request.form['haslo']
+
+        if neo4j_service.check_user(email, haslo):
+            session['logged_in'] = True
+            return redirect(url_for('index'))
+        else:
+            return "Niepoprawny login lub hasło"
+    else:
+        # Handle GET request (render login page)
+        return render_template('index2.html')
 
 @app.route('/logout')
 def logout():
