@@ -134,7 +134,7 @@ def choose_role():
             print(f"Usługodawca {imie} {nazwisko} został utworzony.")
 
         # Przekieruj użytkownika na stronę główną lub gdziekolwiek indziej
-        return render_template('index2.html')
+        return render_template('index2.html', imie=imie)
 
     # Jeśli metoda to GET lub formularz nie został jeszcze wysłany, wyświetl stronę wyboru roli
     return render_template('choose_role.html')
