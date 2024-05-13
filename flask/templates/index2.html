@@ -14,12 +14,14 @@
             <!-- Panel boczny -->
             <div class="col-md-3 bg-light p-4">
                 <h4>Złota Rączka</h4>
+                <h2>Witaj, {{ imie }}</h2> <!-- Tutaj wyświetlamy imię użytkownika -->
                 <hr>
                 <button class="btn btn-primary mb-2" onclick="logout()">Wyloguj się</button>
             </div>
 
             <!-- Mapa -->
-            <div class="col-md-9" id="map" style="height: 100vh;"></div>
+            <div class="col-md-9" id="map" style="height: 100vh;">
+            </div>
         </div>
     </div>
 
@@ -34,10 +36,6 @@
         function logout() {
             window.location.href = "/logout";
         }
-
-        // Ustawienie imienia użytkownika
-        var imie = "{{ imie }}";
-        document.write("Witaj " + imie);
     </script>
 
     <!-- Bootstrap JS, popper.js, and jQuery -->
