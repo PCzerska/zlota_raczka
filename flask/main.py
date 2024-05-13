@@ -10,6 +10,28 @@ class Neo4jService(object):
     def __init__(self, uri, user, password):
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
 
+    def get_user_name(self, id_uzytkownika):
+        with self._driver.session() as session:
+            # Sprawdź, czy użytkownik jest fachowcem
+            result = session.run("MATCH (f:Fachowiec {id_fachowca: $id_uzytkownika}) RETURN f.Imię AS imie",
+                                 id_uzytkownika=id_uzytkownika)
+
+            record = result.single()
+
+            if record:
+                return record['imie']
+
+            # Jeśli użytkownik nie jest fachowcem, sprawdź czy jest zleceniodawcą
+            result = session.run("MATCH (z:Zleceniodawca {id_zleceniodawcy: $id_uzytkownika}) RETURN z.Imię AS imie",
+                                 id_uzytkownika=id_uzytkownika)
+            record = result.single()
+            print(record)
+            if record:
+                return record['imie']
+
+            # Jeśli użytkownik nie jest ani fachowcem, ani zleceniodawcą, zwróć None
+            return None
+
     def create_fachowiec(self, id_uzytkownika, imie, nazwisko, fach, data_dolaczenia):
         with self._driver.session() as session:
             create_fachowiec_query = (
@@ -153,8 +175,6 @@ def choose_role():
 
 
 
-
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
@@ -163,12 +183,35 @@ def login():
 
         if neo4j_service.check_user(email, haslo):
             session['logged_in'] = True
-            return redirect(url_for('index'))
+
+            # Pobierz identyfikator użytkownika na podstawie adresu e-mail
+            id_uzytkownika = neo4j_service.get_user_id(email)
+
+            # Pobierz imię użytkownika na podstawie jego identyfikatora
+            imie = neo4j_service.get_user_name(id_uzytkownika)
+            print(imie)
+
+            # Zapisz imię użytkownika w sesji
+            session['imie'] = imie
+
+            return render_template('index2.html',imie=imie)
         else:
             return "Niepoprawny login lub hasło"
     else:
         # Obsługa metody GET, zwraca stronę logowania
         return render_template('index2.html')
+
+
+from flask import request
+
+
+@app.route('/update_location', methods=['POST'])
+def update_location():
+    data = request.json
+    latitude = data['latitude']
+    longitude = data['longitude']
+
+
 
 @app.route('/logout')
 def logout():
