@@ -10,16 +10,16 @@ class Neo4jService(object):
     def __init__(self, uri, user, password):
         self._driver = GraphDatabase.driver(uri, auth=(user, password))
 
-    def create_fachowiec(self, id_uzytkownika, imie, nazwisko, fach):
+    def create_fachowiec(self, id_uzytkownika, imie, nazwisko, fach, data_dolaczenia):
         with self._driver.session() as session:
             create_fachowiec_query = (
                 "MATCH (u:Użytkownik {id_użytkownika: $id_uzytkownika}) "
-                "CREATE (f:Fachowiec {id_fachowca: $id_uzytkownika, Imię: $imie, Nazwisko: $nazwisko, Fach: $fach}) "
+                "CREATE (f:Fachowiec {id_fachowca: $id_uzytkownika, Imię: $imie, Nazwisko: $nazwisko, Fach: $fach,`Data dołączenia`: $data_dolaczenia}) "
                 "CREATE (u)-[:POWIĄZANY_Z]->(f) "
                 "RETURN f"
             )
 
-            session.run(create_fachowiec_query, id_uzytkownika=id_uzytkownika, imie=imie, nazwisko=nazwisko, fach=fach)
+            session.run(create_fachowiec_query, id_uzytkownika=id_uzytkownika, imie=imie, nazwisko=nazwisko, fach=fach, data_dolaczenia=data_dolaczenia)
 
     def create_zleceniodawca(self, id_uzytkownika, imie, nazwisko, data_dolaczenia):
         with self._driver.session() as session:
@@ -110,6 +110,8 @@ def register():
     return redirect(url_for('choose_role'))
 
 
+from datetime import datetime
+
 @app.route('/choose_role', methods=['GET', 'POST'])
 def choose_role():
     if 'registered' not in session:
@@ -121,13 +123,14 @@ def choose_role():
         imie = request.form['imie']
         nazwisko = request.form['nazwisko']
         id_uzytkownika = session['id_uzytkownika']
+        data_dolaczenia = datetime.now().strftime("%Y-%m-%d %H:%M:%S")  # Pobierz aktualną datę
 
         if role == 'fachowiec':
             fach = request.form['fach']
-            neo4j_service.create_fachowiec(id_uzytkownika, imie, nazwisko, fach)
+            neo4j_service.create_fachowiec(id_uzytkownika, imie, nazwisko, fach, data_dolaczenia)
             print(f"Fachowiec {imie} {nazwisko} został utworzony.")
         else:
-            neo4j_service.create_zleceniodawca(id_uzytkownika, imie, nazwisko)
+            neo4j_service.create_zleceniodawca(id_uzytkownika, imie, nazwisko, data_dolaczenia)
             print(f"Usługodawca {imie} {nazwisko} został utworzony.")
 
         # Przekieruj użytkownika na stronę główną lub gdziekolwiek indziej
@@ -135,6 +138,7 @@ def choose_role():
 
     # Jeśli metoda to GET lub formularz nie został jeszcze wysłany, wyświetl stronę wyboru roli
     return render_template('choose_role.html')
+
 
 
 
