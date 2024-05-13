@@ -17,6 +17,11 @@
                 <h2>Witaj, {{ imie }}</h2> <!-- Tutaj wyświetlamy imię użytkownika -->
                 <hr>
                 <button class="btn btn-primary mb-2" onclick="logout()">Wyloguj się</button>
+                <div class="form-group">
+                    <label for="bufferRadius">Promień bufora (m):</label>
+                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="1000" step="100" value="1000" onchange="updateBufferRadius(this.value)">
+                    <span id="bufferValue">1000 m</span>
+                </div>
             </div>
 
             <!-- Mapa -->
@@ -26,16 +31,64 @@
     </div>
 
     <script>
+        var map; // Zmienna przechowująca obiekt mapy
+        var bufferCircle; // Zmienna przechowująca obiekt koła bufora
+
         // Inicjalizacja mapy
-        var map = L.map('map').setView([52.23249, 21.01011], 20);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(map);
+        function initMap() {
+            map = L.map('map').setView([52.23249, 21.01011], 13); // Ustawienie początkowego zoomu na 13
+
+            // Dodanie warstwy mapy z OpenStreetMap
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            showUserLocation(); // Wywołanie funkcji wyświetlającej lokalizację użytkownika
+        }
 
         // Funkcja do wylogowywania
         function logout() {
             window.location.href = "/logout";
         }
+
+        // Funkcja do pobierania i wyświetlania lokalizacji użytkownika
+        function showUserLocation() {
+            if ("geolocation" in navigator) {
+                // Pobierz aktualną lokalizację użytkownika
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLatitude = position.coords.latitude;
+                    var userLongitude = position.coords.longitude;
+
+                    // Utwórz znacznik na mapie w lokalizacji użytkownika
+                    var userMarker = L.marker([userLatitude, userLongitude]).addTo(map);
+                    userMarker.bindPopup("<b>Tu jesteś!</b>").openPopup();
+
+                    // Narysuj początkowy filetowy bufor o promieniu 1000m wokół lokalizacji użytkownika
+                    bufferCircle = L.circle([userLatitude, userLongitude], {
+                        color: '#6633FF',
+                        fillColor: '#6633FF',
+                        fillOpacity: 0.2,
+                        radius: 1000
+                    }).addTo(map);
+
+                    // Przesuń mapę do lokalizacji użytkownika
+                    map.setView([userLatitude, userLongitude], 13);
+                });
+            } else {
+                alert("Twoja przeglądarka nie obsługuje geolokalizacji.");
+            }
+        }
+
+        // Funkcja do aktualizacji promienia bufora na podstawie wartości suwaka
+        function updateBufferRadius(radius) {
+            document.getElementById("bufferValue").innerText = radius + " m"; // Zaktualizuj wyświetlaną wartość promienia
+            bufferCircle.setRadius(radius); // Ustaw nowy promień dla koła bufora
+        }
+
+        // Wywołaj funkcję initMap po załadowaniu strony
+        window.onload = function() {
+            initMap();
+        };
     </script>
 
     <!-- Bootstrap JS, popper.js, and jQuery -->

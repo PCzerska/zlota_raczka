@@ -190,6 +190,15 @@ def login():
         return render_template('index2.html')
 
 
+from flask import request
+
+
+@app.route('/update_location', methods=['POST'])
+def update_location():
+    data = request.json
+    latitude = data['latitude']
+    longitude = data['longitude']
+
 
 
 @app.route('/logout')
