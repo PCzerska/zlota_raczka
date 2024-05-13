@@ -12,12 +12,14 @@
     <div class="container-fluid">
         <div class="row">
             <!-- Panel boczny -->
-            <div class="col-md-3 bg-light p-4">
+            <div class="col-md-3 bg-light p-4 d-flex flex-column align-items-start">
                 <h4>Złota Rączka</h4>
                 <h2>Witaj, {{ imie }}</h2> <!-- Tutaj wyświetlamy imię użytkownika -->
                 <hr>
-                <button class="btn btn-primary mb-2" onclick="logout()">Wyloguj się</button>
+                <button class="btn btn-primary btn-block mb-2" onclick="logout()">Wyloguj się</button>
+                <button class="btn btn-success btn-block" onclick="add_offer()">Dodaj ogłoszenie</button>
             </div>
+
 
             <!-- Mapa -->
             <div class="col-md-9" id="map" style="height: 100vh;">
@@ -36,11 +38,18 @@
         function logout() {
             window.location.href = "/logout";
         }
+
+        // Funkcja do dodawania ogłoszenia
+        function add_offer() {
+            window.location.href = "/add_offer";
+        }
     </script>
 
     <!-- Bootstrap JS, popper.js, and jQuery -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+
 </body>
 </html>

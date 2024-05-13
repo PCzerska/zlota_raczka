@@ -75,6 +75,18 @@ class Neo4jService(object):
                 return record['id']
             return None
 
+    def create_offer(self, user_id, title, description, price, timestamp):
+        with self._driver.session() as session:
+            create_offer_query = (
+                "MATCH (u:Użytkownik {id_użytkownika: $user_id}) "
+                "CREATE (o:Ogłoszenie {Tytuł: $title, Opis: $description, Cena: $price, `Data dodania`: $timestamp}) "
+                "CREATE (u)-[:DODAŁ]->(o) "
+                "RETURN o"
+            )
+
+            session.run(create_offer_query, user_id=user_id, title=title, description=description, price=price,
+                        timestamp=timestamp)
+
 # Konfiguracja Neo4j
 NEO4J_URI = "neo4j+s://eda19c51.databases.neo4j.io"
 NEO4J_USER = "neo4j"
@@ -162,6 +174,27 @@ def login():
 def logout():
     session.pop('logged_in', None)
     return redirect(url_for('index'))
+
+@app.route('/add_offer')
+def add_offer():
+    return render_template('add_offer.html')
+
+@app.route('/submit_offer', methods=['POST'])
+def submit_offer():
+    if 'logged_in' not in session:
+        return "Nie jesteś zalogowany. Aby dodać ogłoszenie, zaloguj się."
+
+    title = request.form['title']
+    description = request.form['description']
+    price = request.form['price']
+    user_id = session['id_uzytkownika']
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+    neo4j_service.create_offer(user_id, title, description, price, timestamp)
+    session['dodano_ogloszenie'] = True
+
+    return redirect(url_for('index'))
+
 
 if __name__ == '__main__':
     app.run(debug=True)
