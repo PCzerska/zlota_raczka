@@ -177,9 +177,7 @@ def register():
     session['registered'] = True
     # Zapisz id użytkownika do sesji
     session['id_uzytkownika'] = id_uzytkownika
-
     return redirect(url_for('choose_role'))
-
 
 from datetime import datetime
 
