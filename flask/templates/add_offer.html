@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Dodaj Ogłoszenie</title>
+</head>
+<body>
+    <h1>Dodaj Ogłoszenie</h1>
+
+    <form action="/submit_offer" method="post">
+        <label for="title">Tytuł ogłoszenia:</label><br>
+        <input type="text" id="title" name="title"><br>
+
+        <label for="description">Opis ogłoszenia:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50"></textarea><br>
+
+        <label for="price">Cena:</label><br>
+        <input type="number" id="price" name="price"><br>
+
+        <input type="submit" value="Dodaj ogłoszenie">
+    </form>
+</body>
+<script>
+
+        // Funkcja do dodawania ogłoszenia
+        function submit_offer() {
+            window.location.href = "/submit_offer";
+        }
+</script>
+</html>
