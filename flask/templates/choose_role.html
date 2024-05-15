@@ -1,58 +1,3 @@
-<<<<<<< HEAD
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wybór roli</title>
-</head>
-<body>
-    <h2>Wybierz swoją rolę:</h2>
-    <form action="/choose_role" method="POST">
-        <label for="role">Rola:</label>
-        <select id="role" name="role" onchange="toggleFachField()">
-            <option value="usługodawca">Usługodawca</option>
-            <option value="fachowiec">Fachowiec</option>
-        </select>
-        <br><br>
-        <label id="fachLabel" for="fach" style="display:none">Wybierz fach:</label>
-        <select id="fach" name="fach" style="display:none">
-            <option value="malarz">Malarz</option>
-            <option value="hydraulik">Hydraulik</option>
-            <option value="spawacz">Spawacz</option>
-            <option value="ślusarz">Ślusarz</option>
-            <option value="sprzątacz">Sprzątacz</option>
-            <option value="stolarz">Stolarz</option>
-        </select>
-        <br><br>
-        <label for="imie">Imię:</label>
-        <input type="text" id="imie" name="imie"><br><br>
-        <label for="nazwisko">Nazwisko:</label>
-        <input type="text" id="nazwisko" name="nazwisko"><br><br>
-        <!-- Dodatkowe pola, które mogą być potrzebne -->
-        <!-- Możesz dodać więcej pól w zależności od potrzeb -->
-        <input type="submit" value="Wybierz rolę">
-    </form>
-
-    <script>
-        function toggleFachField() {
-            var roleSelect = document.getElementById("role");
-            var fachLabel = document.getElementById("fachLabel");
-            var fachField = document.getElementById("fach");
-
-            if (roleSelect.value === "fachowiec") {
-                fachLabel.style.display = "block";
-                fachField.style.display = "block";
-            } else {
-                fachLabel.style.display = "none";
-                fachField.style.display = "none";
-                fachField.value = "";
-            }
-        }
-    </script>
-</body>
-</html>
-=======
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -106,4 +51,3 @@
     </script>
 </body>
 </html>
->>>>>>> origin/paula

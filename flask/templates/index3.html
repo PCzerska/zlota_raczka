@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Mój profil</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        p {
+            margin: 10px 0;
+        }
+        strong {
+            font-weight: bold;
+        }
+        .ogloszenia {
+            margin-top: 20px;
+        }
+        .ogloszenie {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Moje dane</h1>
+        <p><strong>Imię:</strong> {{ user_info['Imię'] }}</p>
+        <p><strong>Nazwisko:</strong> {{ user_info['Nazwisko'] }}</p>
+        {% if user_info.get('Fach') %}
+            <p><strong>Fach:</strong> {{ user_info['Fach'] }}</p>
+        {% endif %}
+        <p><strong>Data dołączenia:</strong> {{ user_info['Data dołączenia'] }}</p>
+        {% if user_info.get('role') == 'fachowiec' %}
+            <h2>Informacje o fachowcu</h2>
+            <p><strong>ID Fachowca:</strong> {{ user_info['id_fachowca'] }}</p>
+            <p><strong>Fach:</strong> {{ user_info['Fach'] }}</p>
+        {% elif user_info.get('role') == 'zleceniodawca' %}
+            <h2>Informacje o zleceniodawcy</h2>
+            <p><strong>ID Zleceniodawcy:</strong> {{ user_info['id_zleceniodawcy'] }}</p>
+            <div class="ogloszenia">
+                <h2>Moje ogłoszenia</h2>
+                {% for ogloszenie in user_info['ogloszenia'] %}
+                    <div class="ogloszenie">
+                        <p><strong>Tytuł:</strong> {{ ogloszenie['Tytuł'] }}</p>
+                        <p><strong>Opis:</strong> {{ ogloszenie['Opis'] }}</p>
+                        <p><strong>Cena:</strong> {{ ogloszenie['Cena'] }}</p>
+                        <p><strong>Data dodania:</strong> {{ ogloszenie['Data dodania'] }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+        <!-- Dodaj więcej pól, jeśli są dostępne w bazie danych Neo4j -->
+    </div>
+</body>
+</html>
