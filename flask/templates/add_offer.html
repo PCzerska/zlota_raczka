@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <title>Dodaj Ogłoszenie</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Dodaj Ogłoszenie</h1>
+
+    <form action="/submit_offer" method="post">
+        <label for="title">Tytuł ogłoszenia:</label><br>
+        <input type="text" id="title" name="title"><br>
+
+        <label for="description">Opis ogłoszenia:</label><br>
+        <textarea id="description" name="description" rows="4" cols="50"></textarea><br>
+
+        <label for="price">Cena:</label><br>
+        <input type="number" id="price" name="price"><br>
+
+        <label for="map">Lokalizacja:</label>
+        <div id="map"></div>
+        <input type="hidden" id="latitude" name="latitude">
+        <input type="hidden" id="longitude" name="longitude"><br><br>
+
+        <input type="submit" value="Dodaj ogłoszenie">
+    </form>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([52.22977, 21.01178], 13);  // Ustawienia początkowe mapy, np. Warszawa
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var marker;
+
+        map.on('click', function(e) {
+            var lat = e.latlng.lat;
+            var lon = e.latlng.lng;
+
+            if (marker) {
+                marker.setLatLng(e.latlng);
+            } else {
+                marker = L.marker(e.latlng).addTo(map);
+            }
+
+            document.getElementById('latitude').value = lat;
+            document.getElementById('longitude').value = lon;
+        });
+    </script>
+</body>
+</html>
