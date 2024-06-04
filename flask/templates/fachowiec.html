@@ -26,19 +26,19 @@
                 </div>
                 <hr>
                 <h5>Lista ogłoszeń</h5>
-                      <div id="offers-list" class="w-100" style="height: 250px; overflow-y: auto;">
-    {% for ogłoszenie in offers %}
-        <div class="ogłoszenie p-2 mb-2 border rounded" style="clear: both;">
-            <h6>{{ ogłoszenie['Tytuł'] }}</h6>
-            <p><strong>Opis:</strong> {{ ogłoszenie['Opis'] }}</p>
-            <p><strong>Cena:</strong> {{ ogłoszenie['Cena'] }}</p>
-            <p><strong>Data dodania:</strong> {{ ogłoszenie['Data dodania'] }}</p>
-        </div>
-        <hr> <!-- Separator -->
-    {% endfor %}
-</div>
-
-
+                <div id="offers-list" class="w-100" style="height: 250px; overflow-y: auto;">
+                    {% for offer in offers %}
+                        <!-- Twój przycisk -->
+                        <div id="offer-{{ offer['ID'] }}" class="ogłoszenie p-2 mb-2 border rounded" style="clear: both;">
+                            <h6>{{ offer['Tytuł'] }}</h6>
+                            <p><strong>Opis:</strong> {{ offer['Opis'] }}</p>
+                            <p><strong>Cena:</strong> {{ offer['Cena'] }}</p>
+                            <p><strong>Data dodania:</strong> {{ offer['Data dodania'] }}</p>
+                            <button class="btn btn-success btn-block" onclick="acceptOffer({{ offer['ID'] }})">Przyjmij</button>
+                        </div>
+                        <hr> <!-- Separator -->
+                    {% endfor %}
+                </div>
             </div>
 
             <!-- Mapa -->
@@ -54,66 +54,74 @@
         var userLongitude;
         var currentRadius = 1000; // Domyślny promień bufora
 
+        // Inicjalizacja mapy
         function initMap() {
-    map = L.map('map').setView([52.23249, 21.01011], 13);
+            map = L.map('map').setView([52.23249, 21.01011], 13);
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-    }).addTo(map);
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
 
-    showUserLocation();
-}
+            showUserLocation();
+        }
+
         // Funkcja do wylogowywania
         function logout() {
             window.location.href = "/logout";
         }
 
+        // Funkcja do wyświetlania profilu użytkownika
         function myprofile() {
             window.location.href = "/user_info";
         }
 
-        function wyszukaj() {
-    var visibleOffers = []; // Tablica przechowująca widoczne ogłoszenia na mapie
-
-    map.eachLayer(function(layer) {
-        if (layer instanceof L.Marker) {
-            var latlng = layer.getLatLng();
-            var isVisible = map.getBounds().contains(latlng); // Sprawdź, czy znacznik jest w widoku mapy
-            if (isVisible) {
-                visibleOffers.push(layer.getPopup().getContent()); // Dodaj dane ogłoszenia do tablicy visibleOffers
-            }
+        function acceptOffer() {
+            window.location.href = "/accept_offer";
         }
-    });
 
-    // Wyświetl widoczne ogłoszenia
-    document.getElementById("offers-list").innerHTML = visibleOffers.join('');
-}
 
+        // Funkcja do wyszukiwania ogłoszeń
+        function wyszukaj() {
+            var visibleOffers = []; // Tablica przechowująca widoczne ogłoszenia na mapie
+
+            map.eachLayer(function(layer) {
+                if (layer instanceof L.Marker) {
+                    var latlng = layer.getLatLng();
+                    var isVisible = map.getBounds().contains(latlng); // Sprawdź, czy znacznik jest w widoku mapy
+                    if (isVisible) {
+                        visibleOffers.push(layer.getPopup().getContent()); // Dodaj dane ogłoszenia do tablicy visibleOffers
+                    }
+                }
+            });
+
+            // Wyświetl widoczne ogłoszenia
+            document.getElementById("offers-list").innerHTML = visibleOffers.join('');
+        }
 
         // Funkcja do pobierania i wyświetlania lokalizacji użytkownika
         function showUserLocation() {
             if ("geolocation" in navigator) {
-                // Pobierz aktualną lokalizację użytkownika
                 navigator.geolocation.getCurrentPosition(function(position) {
                     userLatitude = position.coords.latitude;
                     userLongitude = position.coords.longitude;
 
-                    // Utwórz znacznik na mapie w lokalizacji użytkownika
-                    var userMarker = L.marker([userLatitude, userLongitude]).addTo(map);
-                    userMarker.bindPopup("<b>Tu jesteś!</b>").openPopup();
+                    if (userLatitude && userLongitude) {
+                        var userMarker = L.marker([userLatitude, userLongitude]).addTo(map);
+                        userMarker.bindPopup("<b>Tu jesteś!</b>").openPopup();
 
-                    // Narysuj początkowy filetowy bufor o promieniu 1000m wokół lokalizacji użytkownika
-                    bufferCircle = L.circle([userLatitude, userLongitude], {
-                        color: '#6633FF',
-                        fillColor: '#6633FF',
-                        fillOpacity: 0.2,
-                        radius: currentRadius
-                    }).addTo(map);
+                        bufferCircle = L.circle([userLatitude, userLongitude], {
+                            color: '#6633FF',
+                            fillColor: '#6633FF',
+                            fillOpacity: 0.2,
+                            radius: currentRadius
+                        }).addTo(map);
 
-                    // Przesuń mapę do lokalizacji użytkownika
-                    map.setView([userLatitude, userLongitude], 13);
+                        map.setView([userLatitude, userLongitude], 13);
 
-                    showOffers(); // Wywołanie funkcji wyświetlającej ogłoszenia po pobraniu lokalizacji użytkownika
+                        showOffers(); // Wywołanie funkcji wyświetlającej ogłoszenia po pobraniu lokalizacji użytkownika
+                    } else {
+                        console.error('Nie można pobrać lokalizacji użytkownika.');
+                    }
                 });
             } else {
                 alert("Twoja przeglądarka nie obsługuje geolokalizacji.");
@@ -128,8 +136,6 @@
             showOffers(); // Wywołaj funkcję showOffers po aktualizacji promienia bufora
         }
 
-
-
         // Funkcja do obliczania odległości między dwoma punktami (w metrach) za pomocą wzoru Haversine
         function calculateDistance(lat1, lon1, lat2, lon2) {
             var R = 6371000; // Promień Ziemi w metrach
@@ -143,47 +149,82 @@
             return distance;
         }
 
+        // Funkcja do wyświetlania ogłoszeń na mapie
         function showOffers() {
-    map.eachLayer(function (layer) {
-        if (layer instanceof L.Marker) {
-            map.removeLayer(layer);
-        }
-    });
-
-    fetch('/api/offers')
-        .then(response => response.json())
-        .then(data => {
-            data.forEach(offer => {
-                var latitude = offer.Szerokość_geograficzna;
-                var longitude = offer.Długość_geograficzna;
-
-                if (latitude && longitude) {
-                    var distance = calculateDistance(userLatitude, userLongitude, latitude, longitude);
-                    if (distance <= currentRadius) {
-                        var marker = L.marker([latitude, longitude]).addTo(map);
-                        marker.bindPopup(`<b>${offer.Tytuł}</b><br>${offer.Opis}<br><b>Cena:</b> ${offer.Cena} PLN`);
-
-                    }
-                } else {
-                    console.error('Invalid LatLng object:', offer);
+            map.eachLayer(function (layer) {
+                if (layer instanceof L.Marker) {
+                    map.removeLayer(layer);
                 }
             });
-        })
-        .catch(error => console.error('Error fetching offers:', error));
-}
+
+            fetch('/api/offers')
+                .then(response => response.json())
+                .then(data => {
+                    var offersList = document.getElementById('offers-list');
+                    offersList.innerHTML = ''; // Wyczyść listę ogłoszeń
+
+                    data.forEach(offer => {
+                        var latitude = offer.Szerokość_geograficzna;
+                        var longitude = offer.Długość_geograficzna;
+
+                        if (latitude && longitude) {
+                            var distance = calculateDistance(userLatitude, userLongitude, latitude, longitude);
+                            if (distance <= currentRadius) {
+                                var marker = L.marker([latitude, longitude]).addTo(map);
+                                marker.bindPopup(`<b>${offer.Tytuł}</b><br>${offer.Opis}<br><b>Cena:</b> ${offer.Cena} PLN<br><button class="btn btn-success btn-block" onclick="acceptOffer(${offer.ID})">Przyjmij</button>`);
+
+                                // Dodaj ogłoszenie do listy ogłoszeń
+                                var offerDiv = document.createElement('div');
+                                offerDiv.className = 'ogłoszenie p-2 mb-2 border rounded';
+                                offerDiv.innerHTML = `
+                                    <h6>${offer.Tytuł}</h6>
+                                    <p><strong>Opis:</strong> ${offer.Opis}</p>
+                                    <p><strong>Cena:</strong> ${offer.Cena}</p>
+                                    <p><strong>Data dodania:</strong> ${offer.Data_dodania}</p>
+                                    <button class="btn btn-success btn-block" onclick="acceptOffer(${offer.ID})">Przyjmij</button>
+                                `;
+                                offersList.appendChild(offerDiv);
+                            }
+                        } else {
+                            console.error('Invalid LatLng object:', offer);
+                        }
+                    });
+                })
+                .catch(error => console.error('Error fetching offers:', error));
+        }
+
+        // Funkcja do akceptowania oferty
+        function acceptOffer(offerId) {
+            // Wysyłamy zapytanie POST do /accept_offer za pomocą AJAX
+            fetch('/accept_offer', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    'offer_id': offerId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Wystąpił problem podczas akceptowania oferty.');
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert(data.message); // Wyświetlamy komunikat
+                // Tutaj możesz wykonać dodatkowe akcje, np. odświeżenie listy ofert
+            })
+            .catch(error => {
+                alert(error.message); // Wyświetlamy błąd
+            });
+        }
 
 
-        // Wywołaj funkcję initMap po załadowaniu strony
-        window.onload = function() {
+        // Inicjalizacja mapy po załadowaniu strony
+        document.addEventListener('DOMContentLoaded', function() {
             initMap();
-            showOffers();
-        };
+        });
     </script>
-
-    <!-- Bootstrap JS, popper.js, and jQuery -->
-    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-
 </body>
 </html>

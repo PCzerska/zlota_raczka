@@ -24,6 +24,15 @@
                     <input type="range" class="form-control-range" id="bufferRadius" min="100" max="1000" step="100" value="1000" onchange="updateBufferRadius(this.value)">
                     <span id="bufferValue">1000 m</span>
                 </div>
+                <!-- Okno informacyjne o przyjęciu zlecenia -->
+                {% if user_info['role'] == 'zleceniodawca' %}
+                <div id="offerAcceptReject" class="alert alert-success mt-3" role="alert" style="display: none;">
+                    Zlecenie zostało zaakceptowane przez fachowca!
+                    <button class="btn btn-success mt-2" onclick="agreeonOffer()">Zaakceptuj</button>
+                    <button class="btn btn-danger mt-2" onclick="rejectOffer()">Odrzuć</button>
+                </div>
+
+                {% endif %}
             </div>
 
             <!-- Mapa -->
@@ -58,6 +67,14 @@
         // Funkcja do dodawania ogłoszenia
         function add_offer() {
             window.location.href = "/add_offer";
+        }
+
+        function agreeonOffer() {
+            window.location.href = "/agreeon_offer";
+        }
+
+        function rejectoffer() {
+            window.location.href = "/reject_offer";
         }
 
         function myprofile() {
