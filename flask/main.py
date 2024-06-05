@@ -107,20 +107,20 @@ class Neo4jService(object):
                 return record['id']
             return None
 
-    def create_offer(self, user_id, title, description, price, timestamp, latitude, longitude, status='aktywne'):
+    def create_offer(self, user_id, title, description, price, timestamp, latitude, longitude, status='aktywne', id_fachowca=None):
         with self._driver.session() as session:
             last_offer_id = self.get_last_offer_id()
             new_offer_id = int(last_offer_id) + 1 if last_offer_id else 1
             create_offer_query = (
                 "MATCH (u:Użytkownik {id_użytkownika: $user_id}) "
                 "CREATE (o:Ogłoszenie {ID: $offer_id, Tytuł: $title, Opis: $description, Cena: $price, `Data dodania`: $timestamp, "
-                "Status: $status, Szerokość_geograficzna: $latitude, Długość_geograficzna: $longitude}) "
+                "Status: $status, Szerokość_geograficzna: $latitude, Długość_geograficzna: $longitude, id_fachowca: $id_fachowca}) "
                 "CREATE (u)-[:DODAŁ]->(o) "
                 "RETURN o"
             )
 
             session.run(create_offer_query, user_id=user_id, title=title, description=description, price=price,
-                        timestamp=timestamp, status=status, latitude=latitude, longitude=longitude, offer_id=new_offer_id)
+                        timestamp=timestamp, status=status, latitude=latitude, longitude=longitude, offer_id=new_offer_id, id_fachowca=id_fachowca)
 
     def get_user_info(self, id_uzytkownika):
         with self._driver.session() as session:
@@ -167,22 +167,38 @@ class Neo4jService(object):
                 return record['o']
             return None
 
-    def accept_offer(self, user_id, offer_id):
-        with self._driver.session() as session:
-            result = session.run("""
-                MATCH (u:Użytkownik {id_użytkownika: $user_id}) 
-                MATCH (o:Ogłoszenie {id_oferty: $offer_id})
-                CREATE (u)-[:PRZYJĄŁ]->(o) 
-                SET o.Status = 'Przyjęte'""",
-                user_id=user_id,
-                offer_id=offer_id
-            )
-            record = result.single()
-            if record:
-                return record['przyjete']
+    # def update_offer_status(self, offer_id, new_status):
+    #     with self._driver.session() as session:
+    #         session.run("""
+    #             MATCH (o:Ogłoszenie {ID: $offer_id})
+    #             SET o.Status = $new_status
+    #             RETURN o
+    #         """, offer_id=offer_id, new_status=new_status)
 
-                # Zwracamy True, jeśli operacja się powiodła
-                return None
+    def accept_offer(self, offer_id, fachowiec_id):
+        with self._driver.session() as session:
+            session.run("""
+                MATCH (o:Ogłoszenie {ID: $offer_id})
+                SET o.Status = 'przyjęte', o.id_fachowca = $fachowiec_id
+                RETURN o
+            """, offer_id=offer_id, fachowiec_id=fachowiec_id)
+
+    # def accept_offer(self, user_id, offer_id):
+    #     with self._driver.session() as session:
+    #         #result = \
+    #         session.run("""
+    #             MATCH (u:Użytkownik {id_użytkownika: $user_id})
+    #             MATCH (o:Ogłoszenie {id_oferty: $offer_id})
+    #             CREATE (u)-[:PRZYJĄŁ]->(o)
+    #             SET o.Status = 'Przyjęte'
+    #             RETURN o
+    #             """, user_id=user_id, offer_id=offer_id )
+    #         # record = result.single()
+    #         # if record:
+    #         #     return record
+    #         #
+    #         #     # Zwracamy True, jeśli operacja się powiodła
+    #         # return None
 
 # Konfiguracja Neo4j
 NEO4J_URI = "neo4j+s://eda19c51.databases.neo4j.io"
@@ -313,10 +329,11 @@ def submit_offer():
     # Ustawienie statusu na 'aktywne'
     status = 'aktywne'
 
+
     latitude = request.form['latitude']
     longitude = request.form['longitude']
 
-    neo4j_service.create_offer(user_id, title, description, price, timestamp, latitude, longitude, status)
+    neo4j_service.create_offer(user_id, title, description, price, timestamp, latitude, longitude, status, None)
     session['dodano_ogloszenie'] = True
 
 
@@ -342,21 +359,39 @@ def find():
         return render_template('fachowiec.html', offers=offers, logged_in=True, user_info=user_info)
     return redirect(url_for('login'))
 
-@app.route('/accept_offer', methods=['POST'])
+@app.route('/accept_offer', methods=['GET', 'POST'])
 def accept_offer():
     if 'logged_in' not in session:
-        return "Nie jesteś zalogowany. Zaloguj się, aby zaakceptować ofertę.", 401
+        return jsonify({'message': 'Nie jesteś zalogowany.'}), 401
 
-    offer_id = request.form.get('offer_id')  # Odczytaj offer_id z formularza POST
     user_id = session.get('id_uzytkownika')
+    #role = session.get('role')
 
-    # Wykonaj akceptację oferty
-    response = neo4j_service.accept_offer(user_id, offer_id)
+    # if role != 'fachowiec':
+    #     return jsonify({'message': 'Nie masz uprawnień do przyjmowania ogłoszeń.'}), 403
 
-    if response:
-        return jsonify({"message": "Ogłoszenie zaakceptowane"}), 200
-    else:
-        return jsonify({"error": "Wystąpił problem podczas akceptowania oferty."}), 500
+    offer_id = request.form['offer_id']
+
+    neo4j_service.accept_offer(offer_id, user_id)
+
+    return jsonify({'message': 'Ogłoszenie zostało przyjęte.'}), 200
+
+# @app.route('/accept_offer', methods=['POST'])
+# def accept_offer():
+#     if 'logged_in' not in session:
+#         return "Nie jesteś zalogowany. Zaloguj się, aby zaakceptować ofertę.", 401
+#
+#     offer_id = request.form.get('offer_id')  # Odczytaj offer_id z formularza POST
+#     user_id = session.get('id_uzytkownika')
+#
+#     # Wykonaj akceptację oferty
+#     response = neo4j_service.accept_offer(user_id, offer_id)
+#     print(response)
+#
+#     if response:
+#         return jsonify({"message": "Ogłoszenie zaakceptowane"}), 200
+#     else:
+#         return jsonify({"error": "Wystąpił problem podczas akceptowania oferty."}), 500
 
 #
 # @app.route('/agreeon_offer', methods=['POST'])

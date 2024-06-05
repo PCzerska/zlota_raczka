@@ -21,8 +21,8 @@
                 <button class="btn btn-success btn-block" onclick="myprofile()">Mój profil</button>
                 <div class="form-group">
                     <label for="bufferRadius">Promień bufora (m):</label>
-                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="1000" step="100" value="1000" onchange="updateBufferRadius(this.value)">
-                    <span id="bufferValue">1000 m</span>
+                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="5000" step="100" value="5000" onchange="updateBufferRadius(this.value)">
+                    <span id="bufferValue">5000 m</span>
                 </div>
                 <hr>
                 <h5>Lista ogłoszeń</h5>
@@ -52,7 +52,7 @@
         var bufferCircle; // Zmienna przechowująca obiekt koła bufora
         var userLatitude;
         var userLongitude;
-        var currentRadius = 1000; // Domyślny promień bufora
+        var currentRadius = 5000; // Domyślny promień bufora
 
         // Inicjalizacja mapy
         function initMap() {
@@ -93,8 +93,10 @@
                     }
                 }
             });
-
             // Wyświetl widoczne ogłoszenia
+
+<!--            showUserLocation();-->
+            showOffers();
             document.getElementById("offers-list").innerHTML = visibleOffers.join('');
         }
 
@@ -118,7 +120,7 @@
 
                         map.setView([userLatitude, userLongitude], 13);
 
-                        showOffers(); // Wywołanie funkcji wyświetlającej ogłoszenia po pobraniu lokalizacji użytkownika
+<!--                        showOffers(); // Wywołanie funkcji wyświetlającej ogłoszenia po pobraniu lokalizacji użytkownika-->
                     } else {
                         console.error('Nie można pobrać lokalizacji użytkownika.');
                     }
