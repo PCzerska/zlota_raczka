@@ -6,8 +6,37 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        /* Dodatkowa stylizacja */
+        body {
+            padding-top: 70px; /* Wartość zgodna z navbar-em Bootstrapa */
+            padding-right: 10px;
+            margin: 0;
+        }
+
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+                    <a class="navbar-brand" href="#">Złota Rączka</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <button class="btn btn-secondary mb-2" onclick="myprofile()">Mój profil</button>
+                            </li>
+                            <li class="nav-item">
+                                <span class="ml-2"></span>
+                            </li>
+                            <li class="nav-item">
+                                <button class="btn btn-secondary mb-2" onclick="logout()">Wyloguj się</button>
+                            </li>
+                        </ul>
+                    </div>
+
+    </nav>
 
     <div class="container-fluid">
         <div class="row">
@@ -16,27 +45,23 @@
                 <h4>Złota Rączka</h4>
                 <h2>Witaj, {{ user_info['Imię'] }}</h2> <!-- Tutaj wyświetlamy imię użytkownika -->
                 <hr>
-                <button class="btn btn-primary btn-block mb-2" onclick="logout()">Wyloguj się</button>
-                <button class="btn btn-success btn-block" onclick="wyszukaj()">Wyszukaj ogłoszenia</button>
-                <button class="btn btn-success btn-block" onclick="myprofile()">Mój profil</button>
                 <div class="form-group">
                     <label for="bufferRadius">Promień bufora (m):</label>
-                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="5000" step="100" value="5000" onchange="updateBufferRadius(this.value)">
-                    <span id="bufferValue">5000 m</span>
+                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="5000" step="100" value="2000" onchange="updateBufferRadius(this.value)">
+                    <span id="bufferValue">2000 m</span>
                 </div>
+
+                <button class="btn btn-success btn-block" onclick="wyszukaj()">Wyszukaj ogłoszenia</button>
                 <hr>
                 <h5>Lista ogłoszeń</h5>
                 <div id="offers-list" class="w-100" style="height: 250px; overflow-y: auto;">
                     {% for offer in offers %}
-                        <!-- Twój przycisk -->
-                        <div id="offer-{{ offer['ID'] }}" class="ogłoszenie p-2 mb-2 border rounded" style="clear: both;">
-                            <h6>{{ offer['Tytuł'] }}</h6>
-                            <p><strong>Opis:</strong> {{ offer['Opis'] }}</p>
-                            <p><strong>Cena:</strong> {{ offer['Cena'] }}</p>
-                            <p><strong>Data dodania:</strong> {{ offer['Data dodania'] }}</p>
-                            <button class="btn btn-success btn-block" onclick="acceptOffer({{ offer['ID'] }})">Przyjmij</button>
+                        <div>
+                            <h3>{{ offer['Tytuł'] }}</h3>
+                            <p>{{ offer['Opis'] }}</p>
+                            <p>{{ offer['Cena'] }} zł</p>
+                            <button>{{Przyjmij}}</button> <!-- Dodaj przycisk "Przyjmij" -->
                         </div>
-                        <hr> <!-- Separator -->
                     {% endfor %}
                 </div>
             </div>
@@ -52,14 +77,19 @@
         var bufferCircle; // Zmienna przechowująca obiekt koła bufora
         var userLatitude;
         var userLongitude;
-        var currentRadius = 5000; // Domyślny promień bufora
+        var currentRadius = 2000; // Domyślny promień bufora
 
         // Inicjalizacja mapy
         function initMap() {
             map = L.map('map').setView([52.23249, 21.01011], 13);
 
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/satellite-streets-v11', // Możesz zmienić styl mapy tutaj
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoibGl0dGxld2FmZXIiLCJhIjoiY2x3a2c2ZDQxMDNoZzJxbnhjdXF5M2drZSJ9._CQaHDuvldiRrFkXmuihzA'
             }).addTo(map);
 
             showUserLocation();
@@ -74,11 +104,6 @@
         function myprofile() {
             window.location.href = "/user_info";
         }
-
-        function acceptOffer() {
-            window.location.href = "/accept_offer";
-        }
-
 
         // Funkcja do wyszukiwania ogłoszeń
         function wyszukaj() {
@@ -173,7 +198,7 @@
                             var distance = calculateDistance(userLatitude, userLongitude, latitude, longitude);
                             if (distance <= currentRadius) {
                                 var marker = L.marker([latitude, longitude]).addTo(map);
-                                marker.bindPopup(`<b>${offer.Tytuł}</b><br>${offer.Opis}<br><b>Cena:</b> ${offer.Cena} PLN<br><button class="btn btn-success btn-block" onclick="acceptOffer(${offer.ID})">Przyjmij</button>`);
+                                marker.bindPopup(`<b>${offer.Tytuł}</b><br>${offer.Opis}<br><b>Cena:</b> ${offer.Cena} PLN<br>`);
 
                                 // Dodaj ogłoszenie do listy ogłoszeń
                                 var offerDiv = document.createElement('div');
@@ -183,8 +208,8 @@
                                     <p><strong>Opis:</strong> ${offer.Opis}</p>
                                     <p><strong>Cena:</strong> ${offer.Cena}</p>
                                     <p><strong>Data dodania:</strong> ${offer.Data_dodania}</p>
-                                    <button class="btn btn-success btn-block" onclick="acceptOffer(${offer.ID})">Przyjmij</button>
-                                `;
+                                    <button class="btn btn-success btn-block" onclick="acceptOffer('{${ offer.ID }}')">Przyjmij</button> <!-- Dodaj przycisk "Przyjmij" -->
+                                    `;
                                 offersList.appendChild(offerDiv);
                             }
                         } else {
@@ -195,31 +220,23 @@
                 .catch(error => console.error('Error fetching offers:', error));
         }
 
-        // Funkcja do akceptowania oferty
         function acceptOffer(offerId) {
-            // Wysyłamy zapytanie POST do /accept_offer za pomocą AJAX
-            fetch('/accept_offer', {
+            fetch(`/accept_offer/${offerId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/json',
                 },
-                body: new URLSearchParams({
-                    'offer_id': offerId
-                })
+                body: JSON.stringify({ offerId: offerId }),
             })
             .then(response => {
-                if (!response.ok) {
-                    throw new Error('Wystąpił problem podczas akceptowania oferty.');
+                if (response.ok) {
+                    console.log('Ogłoszenie zostało przyjęte!');
+                    // Tutaj możesz wykonać dodatkowe akcje po pomyślnym przyjęciu ogłoszenia
+                } else {
+                    console.error('Błąd podczas akceptowania ogłoszenia:', response.statusText);
                 }
-                return response.json();
             })
-            .then(data => {
-                alert(data.message); // Wyświetlamy komunikat
-                // Tutaj możesz wykonać dodatkowe akcje, np. odświeżenie listy ofert
-            })
-            .catch(error => {
-                alert(error.message); // Wyświetlamy błąd
-            });
+            .catch(error => console.error('Błąd podczas wysyłania żądania:', error));
         }
 
 

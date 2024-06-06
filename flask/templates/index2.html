@@ -6,24 +6,53 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        /* Dodatkowa stylizacja */
+        body {
+            padding-top: 70px; /* Wartość zgodna z navbar-em Bootstrapa */
+            padding-right: 10px;
+            margin: 0;
+        }
+
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+                    <a class="navbar-brand" href="#">Złota Rączka</a>
+                    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                        <ul class="navbar-nav ml-auto">
+                            <li class="nav-item">
+                                <button class="btn btn-secondary mb-2" onclick="myprofile()">Mój profil</button>
+                            </li>
+                            <li class="nav-item">
+                                <span class="ml-2"></span>
+                            </li>
+                            <li class="nav-item">
+                                <button class="btn btn-secondary mb-2" onclick="logout()">Wyloguj się</button>
+                            </li>
+                        </ul>
+                    </div>
+
+    </nav>
 
     <div class="container-fluid">
         <div class="row">
             <!-- Panel boczny -->
             <div class="col-md-3 bg-light p-4 d-flex flex-column align-items-start">
-                <h4>Złota Rączka</h4>
                 <h2>Witaj, {{ user_info['Imię'] }}</h2> <!-- Tutaj wyświetlamy imię użytkownika -->
                 <hr>
-                <button class="btn btn-primary btn-block mb-2" onclick="logout()">Wyloguj się</button>
-                <button class="btn btn-success btn-block" onclick="add_offer()">Dodaj ogłoszenie</button>
-                <button class="btn btn-success btn-block" onclick="myprofile()">Mój profil</button>
                 <div class="form-group">
                     <label for="bufferRadius">Promień bufora (m):</label>
-                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="5000" step="100" value="5000" onchange="updateBufferRadius(this.value)">
-                    <span id="bufferValue">5000 m</span>
+                    <input type="range" class="form-control-range" id="bufferRadius" min="100" max="5000" step="100" value="2000" onchange="updateBufferRadius(this.value)">
+                    <span id="bufferValue">2000 m</span>
                 </div>
+                <hr>
+                <button class="btn btn-success btn-block" onclick="add_offer()">Dodaj ogłoszenie</button>
+
+
                 <!-- Okno informacyjne o przyjęciu zlecenia -->
                 {% if user_info['role'] == 'zleceniodawca' %}
                 <div id="offerAcceptReject" class="alert alert-success mt-3" role="alert" style="display: none;">
@@ -36,7 +65,7 @@
             </div>
 
             <!-- Mapa -->
-            <div class="col-md-9" id="map" style="height: 100vh;">
+            <div class="col-md-9" id="map" style="height: 88vh;">
             </div>
         </div>
     </div>
@@ -46,14 +75,19 @@
         var bufferCircle; // Zmienna przechowująca obiekt koła bufora
         var userLatitude;
         var userLongitude;
-        var currentRadius = 5000; // Domyślny promień bufora
+        var currentRadius = 2000; // Domyślny promień bufora
 
         // Inicjalizacja mapy
         function initMap() {
         map = L.map('map').setView([52.23249, 21.01011], 13);
 
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/satellite-streets-v11', // Możesz zmienić styl mapy tutaj
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoibGl0dGxld2FmZXIiLCJhIjoiY2x3a2c2ZDQxMDNoZzJxbnhjdXF5M2drZSJ9._CQaHDuvldiRrFkXmuihzA'
         }).addTo(map);
 
         showUserLocation();

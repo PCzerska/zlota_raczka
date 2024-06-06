@@ -6,57 +6,72 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <style>
+        /* Dodatkowa stylizacja */
+        body {
+            padding-top: 70px; /* Wartość zgodna z navbar-em Bootstrapa */
+            padding-right: 10px;
+            margin: 0;
+        }
+
+    </style>
 </head>
 <body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+                <a class="navbar-brand" href="#">Złota Rączka</a>
+                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+    </nav>
+
 
     <div class="container-fluid">
         <div class="row">
             <!-- Panel boczny -->
             <div class="col-md-3 bg-light p-4">
-                <h4>Złota Rączka</h4>
-                <hr>
                 <button class="btn btn-primary mb-2" data-toggle="modal" data-target="#loginModal">Zaloguj się</button>
                 <button class="btn btn-secondary mb-2" data-toggle="modal" data-target="#registrationModal">Zarejestruj się</button>
             </div>
 
             <!-- Mapa -->
-            <div class="col-md-9" id="map" style="height: 100vh;"></div>
+            <div class="col-md-9" id="map" style="height: 88vh;"></div>
         </div>
     </div>
 
-    <!-- Modal logowania -->
-<div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="loginModalLabel">Logowanie</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <!-- Tutaj umieść formularz logowania -->
-                <form action="/login" method="post">
-                    <div class="form-group">
-                        <label for="loginUsername">e-mail:</label>
-                        <input type="text" class="form-control" id="loginUsername" name="email">
-                    </div>
-                    <div class="form-group">
-                        <label for="loginPassword">Hasło:</label>
-                        <input type="password" class="form-control" id="loginPassword" name="haslo">
-                    </div>
-                    <button type="submit" class="btn btn-primary">Zaloguj</button>
-                </form>
-                <!-- Wyświetlanie komunikatu o błędzie -->
-                {% if error %}
-                    <div class="alert alert-danger mt-3" role="alert">
-                        {{ error }}
-                    </div>
-                {% endif %}
+        <!-- Modal logowania -->
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-labelledby="loginModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="loginModalLabel">Logowanie</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Tutaj umieść formularz logowania -->
+                    <form action="/login" method="post">
+                        <div class="form-group">
+                            <label for="loginUsername">e-mail:</label>
+                            <input type="text" class="form-control" id="loginUsername" name="email">
+                        </div>
+                        <div class="form-group">
+                            <label for="loginPassword">Hasło:</label>
+                            <input type="password" class="form-control" id="loginPassword" name="haslo">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Zaloguj</button>
+                    </form>
+                    <!-- Wyświetlanie komunikatu o błędzie -->
+                    {% if error %}
+                        <div class="alert alert-danger mt-3" role="alert">
+                            {{ error }}
+                        </div>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- Modal rejestracji -->
     <div class="modal fade" id="registrationModal" tabindex="-1" role="dialog" aria-labelledby="registrationModalLabel" aria-hidden="true">
@@ -88,9 +103,14 @@
 
     <script>
         // Inicjalizacja mapy
-        var map = L.map('map').setView([52.23249, 21.01011], 20);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        var map = L.map('map').setView([52.23249, 21.01011], 13);
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/satellite-streets-v11', // Możesz zmienić styl mapy tutaj
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoibGl0dGxld2FmZXIiLCJhIjoiY2x3a2c2ZDQxMDNoZzJxbnhjdXF5M2drZSJ9._CQaHDuvldiRrFkXmuihzA'
         }).addTo(map);
     </script>
 
