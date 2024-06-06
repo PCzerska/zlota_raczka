@@ -115,6 +115,7 @@ class Neo4jService(object):
             #timestamp_str = str(timestamp) # Formatowanie daty na string w formacie RRRRMMDDGGMMSS
             # Połączenie stringów
             offer_id = user_id_str + timestamp
+            offer_id = offer_id.replace('{', "").replace('}', "")
             create_offer_query = (
                 "MATCH (u:Użytkownik {id_użytkownika: $user_id}) "
                 "CREATE (o:Ogłoszenie {ID: $offer_id, Tytuł: $title, Opis: $description, Cena: $price, `Data dodania`: $timestamp, "
@@ -176,12 +177,18 @@ class Neo4jService(object):
             try:
                 print(id_fachowca)
                 status = 'przyjęte'
-                result = ("""
+                print(offer_id, id_fachowca)
+
+                query = ("""
                     MATCH (o:Ogłoszenie)
-                    WHERE ID(o) = $offer_id
+                    WHERE o.ID = $offer_id
                     SET o.Status = $status, o.id_fachowca = $id_fachowca
-                    RETURN o""")
-                session.run(result, {"offer_id": offer_id, "status": status, "id_fachowca": id_fachowca})
+                    RETURN o
+                    """)
+
+                result = session.run(query, {"offer_id": offer_id, "status": status, "id_fachowca": id_fachowca})
+                print( result.values())
+
                 print("Zapytanie wykonane poprawnie.")
             except Exception as e:
                 print("Wystąpił błąd podczas wykonywania zapytania:", e)
@@ -349,16 +356,18 @@ def find():
 def accept_offer(offer_id):
     if 'id_uzytkownika' not in session:
         return redirect(url_for('login'))
+    try:
+        # Pobierz id użytkownika, który kliknął przycisk "Przyjmij"
+        user_id = session['id_uzytkownika']
+        #offer_id = offer_id.replace('{',"").replace('}',"")
+        # Zaktualizuj status ogłoszenia na 'przyjęte' i przypisz user_id jako id_fachowca
+        neo4j_service.accept_offer2(offer_id, user_id )
+        return jsonify({"message": "Ogłoszenie zostało przyjęte!", "offer_id": offer_id}), 200
 
-    # Pobierz id użytkownika, który kliknął przycisk "Przyjmij"
-    user_id = session['id_uzytkownika']
-    print("dzialatu")
+    except Exception as e:
+        print(f"Błąd: {e}")
+        return jsonify({"error": str(e)}), 500
 
-    # Zaktualizuj status ogłoszenia na 'przyjęte' i przypisz user_id jako id_fachowca
-    neo4j_service.accept_offer2(offer_id, user_id)
-
-    notification = {'message': 'Offer accepted successfully!'}
-    return jsonify(notification)
 
 
 
