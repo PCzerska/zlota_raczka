@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for, session, jsonify
+from flask import Flask, jsonify, request, render_template, redirect, url_for, session
 from neo4j import GraphDatabase
 import re
 from datetime import datetime
@@ -115,7 +115,7 @@ class Neo4jService(object):
             #timestamp_str = str(timestamp) # Formatowanie daty na string w formacie RRRRMMDDGGMMSS
             # Połączenie stringów
             offer_id = user_id_str + timestamp
-            offer_id = offer_id.replace('{', "").replace('}', "")
+            #offer_id = offer_id.replace('{', "").replace('}', "")
             create_offer_query = (
                 "MATCH (u:Użytkownik {id_użytkownika: $user_id}) "
                 "CREATE (o:Ogłoszenie {ID: $offer_id, Tytuł: $title, Opis: $description, Cena: $price, `Data dodania`: $timestamp, "
@@ -175,20 +175,16 @@ class Neo4jService(object):
     def accept_offer2(self, offer_id, id_fachowca):
         with self._driver.session() as session:
             try:
-                print(id_fachowca)
                 status = 'przyjęte'
                 print(offer_id, id_fachowca)
-
                 query = ("""
                     MATCH (o:Ogłoszenie)
                     WHERE o.ID = $offer_id
                     SET o.Status = $status, o.id_fachowca = $id_fachowca
                     RETURN o
                     """)
-
                 result = session.run(query, {"offer_id": offer_id, "status": status, "id_fachowca": id_fachowca})
                 print( result.values())
-
                 print("Zapytanie wykonane poprawnie.")
             except Exception as e:
                 print("Wystąpił błąd podczas wykonywania zapytania:", e)
@@ -359,14 +355,14 @@ def accept_offer(offer_id):
     try:
         # Pobierz id użytkownika, który kliknął przycisk "Przyjmij"
         user_id = session['id_uzytkownika']
-        #offer_id = offer_id.replace('{',"").replace('}',"")
+        offer_id = offer_id.replace('{',"").replace('}',"")
         # Zaktualizuj status ogłoszenia na 'przyjęte' i przypisz user_id jako id_fachowca
-        neo4j_service.accept_offer2(offer_id, user_id )
-        return jsonify({"message": "Ogłoszenie zostało przyjęte!", "offer_id": offer_id}), 200
+        neo4j_service.accept_offer2(offer_id, user_id)
+        return jsonify({"message": "Ogłoszenie zostało przyjęte!"})
 
     except Exception as e:
         print(f"Błąd: {e}")
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": str(e)})
 
 
 

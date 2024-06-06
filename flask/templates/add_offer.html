@@ -3,8 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <title>Dodaj Ogłoszenie</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <style>
+        /* Stylizacja okienka modalnego */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; /* Możesz dostosować szerokość */
+            max-width: 1200px; /* Możesz dostosować maksymalną szerokość */
+            text-align: center;
+            height: 90%;
+            overflow-y: auto;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
         #map {
             height: 400px;
             width: 100%;
@@ -12,32 +50,50 @@
     </style>
 </head>
 <body>
-    <h1>Dodaj Ogłoszenie</h1>
 
-    <form action="/submit_offer" method="post">
-        <label for="title">Tytuł ogłoszenia:</label><br>
-        <input type="text" id="title" name="title"><br>
+    <!-- Przycisk do otwierania modala -->
+<!--    <button id="openModalBtn" class="btn btn-primary">Dodaj Ogłoszenie</button>-->
 
-        <label for="description">Opis ogłoszenia:</label><br>
-        <textarea id="description" name="description" rows="4" cols="50"></textarea><br>
+    <!-- Okienko modalne -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h1>Dodaj Ogłoszenie</h1>
+            <form action="/submit_offer" method="post">
+                <div class="form-group">
+                    <label for="title">Tytuł ogłoszenia:</label>
+                    <input type="text" id="title" name="title" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="description">Opis ogłoszenia:</label>
+                    <textarea id="description" name="description" class="form-control" rows="4"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="price">Cena:</label>
+                    <input type="number" id="price" name="price" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="map">Lokalizacja:</label>
+                    <div id="map"></div>
+                    <input type="hidden" id="latitude" name="latitude">
+                    <input type="hidden" id="longitude" name="longitude">
+                </div>
+                <input type="submit" value="Dodaj ogłoszenie" class="btn btn-success">
+            </form>
+        </div>
+    </div>
 
-        <label for="price">Cena:</label><br>
-        <input type="number" id="price" name="price"><br>
-
-        <label for="map">Lokalizacja:</label>
-        <div id="map"></div>
-        <input type="hidden" id="latitude" name="latitude">
-        <input type="hidden" id="longitude" name="longitude"><br><br>
-
-        <input type="submit" value="Dodaj ogłoszenie">
-    </form>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
     <script>
-        var map = L.map('map').setView([52.22977, 21.01178], 13);  // Ustawienia początkowe mapy, np. Warszawa
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        // Inicjalizacja mapy
+        var map = L.map('map').setView([52.23249, 21.01011], 13);
+        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+            attribution: 'Map data &copy; <a href="https://www.mapbox.com/">Mapbox</a>',
+            maxZoom: 18,
+            id: 'mapbox/satellite-streets-v11', // Możesz zmienić styl mapy tutaj
+            tileSize: 512,
+            zoomOffset: -1,
+            accessToken: 'pk.eyJ1IjoibGl0dGxld2FmZXIiLCJhIjoiY2x3a2c2ZDQxMDNoZzJxbnhjdXF5M2drZSJ9._CQaHDuvldiRrFkXmuihzA'
         }).addTo(map);
 
         var marker;
@@ -55,6 +111,91 @@
             document.getElementById('latitude').value = lat;
             document.getElementById('longitude').value = lon;
         });
+
+        // Funkcja do otwierania modala
+        var modal = document.getElementById("myModal");
+        var btn = document.getElementById("openModalBtn");
+        var span = document.getElementsByClassName("close")[0];
+
+        btn.onclick = function() {
+            modal.style.display = "block";
+        }
+
+        span.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
     </script>
 </body>
 </html>
+
+
+<!--<!DOCTYPE html>-->
+<!--<html lang="pl">-->
+<!--<head>-->
+<!--    <meta charset="UTF-8">-->
+<!--    <title>Dodaj Ogłoszenie</title>-->
+<!--    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />-->
+<!--    <style>-->
+<!--        #map {-->
+<!--            height: 400px;-->
+<!--            width: 100%;-->
+<!--        }-->
+<!--    </style>-->
+<!--</head>-->
+<!--<body>-->
+<!--    <h1>Dodaj Ogłoszenie</h1>-->
+
+<!--    <form action="/submit_offer" method="post">-->
+<!--        <label for="title">Tytuł ogłoszenia:</label><br>-->
+<!--        <input type="text" id="title" name="title"><br>-->
+
+<!--        <label for="description">Opis ogłoszenia:</label><br>-->
+<!--        <textarea id="description" name="description" rows="4" cols="50"></textarea><br>-->
+
+<!--        <label for="price">Cena:</label><br>-->
+<!--        <input type="number" id="price" name="price"><br>-->
+
+<!--        <label for="map">Lokalizacja:</label>-->
+<!--        <div id="map"></div>-->
+<!--        <input type="hidden" id="latitude" name="latitude">-->
+<!--        <input type="hidden" id="longitude" name="longitude"><br><br>-->
+
+<!--        <input type="submit" value="Dodaj ogłoszenie">-->
+<!--    </form>-->
+
+<!--    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>-->
+<!--    <script>-->
+<!--        var map = L.map('map').setView([52.23249, 21.01011], 13);-->
+<!--        L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {-->
+<!--            attribution: 'Map data &copy; <a href="https://www.mapbox.com/">Mapbox</a>',-->
+<!--            maxZoom: 18,-->
+<!--            id: 'mapbox/satellite-streets-v11', // Możesz zmienić styl mapy tutaj-->
+<!--            tileSize: 512,-->
+<!--            zoomOffset: -1,-->
+<!--            accessToken: 'pk.eyJ1IjoibGl0dGxld2FmZXIiLCJhIjoiY2x3a2c2ZDQxMDNoZzJxbnhjdXF5M2drZSJ9._CQaHDuvldiRrFkXmuihzA'-->
+<!--        }).addTo(map);-->
+
+<!--        var marker;-->
+
+<!--        map.on('click', function(e) {-->
+<!--            var lat = e.latlng.lat;-->
+<!--            var lon = e.latlng.lng;-->
+
+<!--            if (marker) {-->
+<!--                marker.setLatLng(e.latlng);-->
+<!--            } else {-->
+<!--                marker = L.marker(e.latlng).addTo(map);-->
+<!--            }-->
+
+<!--            document.getElementById('latitude').value = lat;-->
+<!--            document.getElementById('longitude').value = lon;-->
+<!--        });-->
+<!--    </script>-->
+<!--</body>-->
+<!--</html>-->

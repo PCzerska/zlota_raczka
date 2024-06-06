@@ -12,6 +12,42 @@
             padding-top: 70px; /* Wartość zgodna z navbar-em Bootstrapa */
             padding-right: 10px;
             margin: 0;
+
+        }
+        /* Stylizacja okienka modalnego */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0,0,0);
+            background-color: rgba(0,0,0,0.4);
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 400px;
+            text_align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
         }
 
     </style>
@@ -37,6 +73,7 @@
                     </div>
 
     </nav>
+
 
     <div class="container-fluid">
         <div class="row">
@@ -65,12 +102,18 @@
                     {% endfor %}
                 </div>
             </div>
-
+            <div id="myModal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p id="modal-message"></p>
+                </div>
+            </div>
             <!-- Mapa -->
             <div class="col-md-9" id="map" style="height: 100vh;">
             </div>
         </div>
     </div>
+
 
     <script>
         var map; // Zmienna przechowująca obiekt mapy
@@ -228,15 +271,39 @@
                 },
                 body: JSON.stringify({ offerId: offerId }),
             })
-            .then(response => {
-                if (response.ok) {
-                    console.log('Ogłoszenie zostało przyjęte!');
-                    // Tutaj możesz wykonać dodatkowe akcje po pomyślnym przyjęciu ogłoszenia
-                } else {
-                    console.error('Błąd podczas akceptowania ogłoszenia:', response.statusText);
+            .then(response => response.json())
+            .then(data => {
+                if (data.message) {
+                    showModal(data.message); // Pokaż wiadomość w okienku modalnym
+                } else if (data.error) {
+                    showModal('Błąd: ' + data.error); // Pokaż błąd w okienku modalnym
                 }
             })
             .catch(error => console.error('Błąd podczas wysyłania żądania:', error));
+        }
+        function showModal(message) {
+            // Pobierz elementy okienka modalnego
+            const modal = document.getElementById("myModal");
+            const modalMessage = document.getElementById("modal-message");
+            const span = document.getElementsByClassName("close")[0];
+
+            // Ustaw wiadomość w okienku modalnym
+            modalMessage.textContent = message;
+
+            // Pokaż okienko modalne
+            modal.style.display = "block";
+
+            // Zamknij okienko modalne, gdy użytkownik kliknie na element <span> (x)
+            span.onclick = function() {
+                modal.style.display = "none";
+            }
+
+            // Zamknij okienko modalne, gdy użytkownik kliknie poza okienkiem
+            window.onclick = function(event) {
+                if (event.target == modal) {
+                    modal.style.display = "none";
+                }
+            }
         }
 
 
